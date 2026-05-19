@@ -32,11 +32,16 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
+    
+ // Export Students to Excel
+     Route::get('/students/export-excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');
+
 
     // Students Management
     Route::resource('students', StudentController::class);
 
-   
+
+
 });
 
 

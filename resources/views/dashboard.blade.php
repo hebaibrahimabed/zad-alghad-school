@@ -1,561 +1,697 @@
-@extends('adminlte::page')
+{{-- resources/views/dashboard.blade.php --}}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - مدرسة زاد الغد</title>
+    {{-- في Laravel استبدل بـ @vite(['resources/css/app.css']) --}}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <style>
+        :root {
+            --navy: #1a237e;
+            --navy-dark: #0d1257;
+            --navy-mid: #283593;
+            --navy-light: #3949ab;
+            --navy-lighter: #5c6bc0;
+            --gold: #ffd600;
+            --gold-soft: #fff9c4;
+            --sidebar-w: 260px;
+            --bg: #f0f2fa;
+            --card-bg: #ffffff;
+            --text-main: #1a237e;
+            --text-muted: #78909c;
+            --border: #e8eaf6;
+        }
 
-@section('title', 'لوحة التحكم')
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-@section('content_header')
-    <div class="row mb-2">
-        <div class="col-sm-6">
-            <h1 class="m-0 dashboard-title">لوحة التحكم</h1>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ─── SIDEBAR ─── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--navy-dark);
+            min-height: 100vh;
+            position: fixed;
+            right: 0;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-logo {
+            padding: 28px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo img {
+            height: 45px;
+            filter: brightness(0) invert(1);
+        }
+
+        .sidebar-logo-text {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+
+        .sidebar-logo-sub {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            font-weight: 400;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 20px 0;
+        }
+
+        .nav-section-title {
+            padding: 10px 20px 6px;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 20px;
+            color: rgba(255,255,255,0.6);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.25s ease;
+            position: relative;
+            margin: 2px 10px;
+            border-radius: 10px;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.07);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(255,214,0,0.15), rgba(255,214,0,0.05));
+            color: var(--gold);
+            border: 1px solid rgba(255,214,0,0.2);
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--gold);
+        }
+
+        .nav-icon {
+            width: 20px;
+            text-align: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            padding: 8px 0;
+        }
+
+        .logout-btn:hover { color: #ef5350; }
+
+        /* ─── MAIN CONTENT ─── */
+        .main-content {
+            margin-right: var(--sidebar-w);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        /* ─── TOPBAR ─── */
+        .topbar {
+            background: white;
+            padding: 16px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar-title {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--navy-dark);
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topbar-date {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+        }
+
+        .user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg);
+            padding: 8px 14px;
+            border-radius: 50px;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, var(--navy), var(--navy-lighter));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.85rem;
+        }
+
+        .user-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--navy-dark);
+        }
+
+        /* ─── PAGE BODY ─── */
+        .page-body {
+            padding: 30px;
+            flex: 1;
+        }
+
+        /* ─── STATS CARDS ─── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow: 0 2px 12px rgba(26,35,126,0.05);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+            animation: slideUp 0.5s ease both;
+        }
+
+        .stat-card:nth-child(1) { animation-delay: 0.1s; }
+        .stat-card:nth-child(2) { animation-delay: 0.2s; }
+        .stat-card:nth-child(3) { animation-delay: 0.3s; }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(26,35,126,0.12);
+        }
+
+        .stat-icon-wrap {
+            width: 62px;
+            height: 62px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .icon-blue { background: linear-gradient(135deg, #1a237e, #3949ab); color: white; }
+        .icon-rose { background: linear-gradient(135deg, #880e4f, #e91e8c); color: white; }
+        .icon-gold { background: linear-gradient(135deg, #e65100, #ffd600); color: white; }
+
+        .stat-info { flex: 1; }
+
+        .stat-num {
+            font-size: 2.2rem;
+            font-weight: 900;
+            color: var(--navy-dark);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+
+        /* ─── CHARTS ROW ─── */
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
+            margin-bottom: 28px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(26,35,126,0.05);
+            border: 1px solid var(--border);
+            animation: slideUp 0.5s ease 0.4s both;
+        }
+
+        .card-header-custom {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .card-title-custom {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--navy-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title-custom i {
+            color: var(--navy-lighter);
+            font-size: 0.9rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* ─── SUMMARY TABLE ─── */
+        .table-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(26,35,126,0.05);
+            border: 1px solid var(--border);
+            animation: slideUp 0.5s ease 0.5s both;
+        }
+
+        .custom-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .custom-table thead th {
+            background: var(--bg);
+            color: var(--navy-dark);
+            font-weight: 700;
+            padding: 13px 16px;
+            font-size: 0.88rem;
+            text-align: right;
+            border: none;
+        }
+
+        .custom-table thead th:first-child { border-radius: 10px 0 0 10px; }
+        .custom-table thead th:last-child { border-radius: 0 10px 10px 0; }
+
+        .custom-table tbody td {
+            padding: 13px 16px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: #37474f;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .custom-table tbody tr:last-child td { border-bottom: none; }
+        .custom-table tbody tr:hover td { background: #f8f9ff; }
+
+        .grade-chip {
+            display: inline-block;
+            padding: 5px 14px;
+            background: linear-gradient(135deg, var(--navy), var(--navy-lighter));
+            color: white;
+            border-radius: 20px;
+            font-size: 0.83rem;
+            font-weight: 600;
+        }
+
+        .progress-wrap {
+            width: 100%;
+            height: 7px;
+            background: var(--border);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--navy), var(--navy-lighter));
+            border-radius: 10px;
+            transition: width 0.8s ease;
+        }
+
+        /* ─── QUICK ACTIONS ─── */
+        .quick-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .action-btn-primary {
+            background: linear-gradient(135deg, var(--navy-dark), var(--navy-light));
+            color: white;
+        }
+
+        .action-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(26,35,126,0.3);
+            color: white;
+        }
+
+        .action-btn-outline {
+            background: white;
+            color: var(--navy);
+            border: 2px solid var(--border);
+        }
+
+        .action-btn-outline:hover {
+            border-color: var(--navy-lighter);
+            color: var(--navy);
+            transform: translateY(-2px);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 1024px) {
+            .charts-row { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(100%); }
+            .main-content { margin-right: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .page-body { padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ─── SIDEBAR ─── -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <img src="{{ asset('images/logo-white.png') }}" alt="زاد الغد"
+             onerror="this.style.display='none'">
+        <div>
+            <div class="sidebar-logo-text">زاد الغد</div>
+            <div class="sidebar-logo-sub">نظام الإدارة المدرسية</div>
         </div>
     </div>
-@stop
 
-@section('content')
-<div class="container-fluid">
+    <nav class="sidebar-nav">
+        <div class="nav-section-title">الرئيسية</div>
+        <a href="{{ route('dashboard') }}" class="nav-item active">
+            <i class="fas fa-chart-pie nav-icon"></i>
+            <span>لوحة التحكم</span>
+        </a>
 
-    {{-- Statistics Cards --}}
-    <div class="row mb-4">
-        {{-- Male Students --}}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="stats-card card-blue">
-                <div class="stats-icon">
+        <div class="nav-section-title" style="margin-top:10px;">إدارة الطلاب</div>
+        <a href="{{ route('students.index') }}" class="nav-item">
+            <i class="fas fa-users nav-icon"></i>
+            <span>قائمة الطلاب</span>
+        </a>
+        <a href="{{ route('students.create') }}" class="nav-item">
+            <i class="fas fa-user-plus nav-icon"></i>
+            <span>إضافة طالب</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
+            <button type="submit" class="logout-btn" style="background:none; border:none; width:100%; cursor:pointer;">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>تسجيل الخروج</span>
+            </button>
+        </form>
+    </div>
+</aside>
+
+<!-- ─── MAIN CONTENT ─── -->
+<div class="main-content">
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="topbar-title">لوحة التحكم</div>
+        <div class="topbar-actions">
+            <span class="topbar-date">
+                <i class="far fa-calendar-alt me-1"></i>
+                {{ now()->locale('ar')->isoFormat('dddd، D MMMM YYYY') }}
+            </span>
+            <div class="user-badge">
+                <div class="user-avatar"><i class="fas fa-user"></i></div>
+                <span class="user-name">{{ auth()->user()->name ?? 'المدير' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="page-body">
+
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <a href="{{ route('students.create') }}" class="action-btn action-btn-primary">
+                <i class="fas fa-user-plus"></i> إضافة طالب جديد
+            </a>
+            <a href="{{ route('students.index') }}" class="action-btn action-btn-outline">
+                <i class="fas fa-list"></i> عرض جميع الطلاب
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon-wrap icon-blue">
                     <i class="fas fa-male"></i>
                 </div>
-                <div class="stats-content">
-                    <h3 class="stats-number">{{ $maleStudents }}</h3>
-                    <p class="stats-label">عدد الطلاب الذكور</p>
+                <div class="stat-info">
+                    <div class="stat-num counter" data-target="{{ $maleStudents }}">{{ $maleStudents }}</div>
+                    <div class="stat-label">عدد الطلاب الذكور</div>
                 </div>
             </div>
-        </div>
-
-        {{-- Female Students --}}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="stats-card card-purple">
-                <div class="stats-icon">
+            <div class="stat-card">
+                <div class="stat-icon-wrap icon-rose">
                     <i class="fas fa-female"></i>
                 </div>
-                <div class="stats-content">
-                    <h3 class="stats-number">{{ $femaleStudents }}</h3>
-                    <p class="stats-label">عدد الطالبات الإناث</p>
+                <div class="stat-info">
+                    <div class="stat-num counter" data-target="{{ $femaleStudents }}">{{ $femaleStudents }}</div>
+                    <div class="stat-label">عدد الطالبات الإناث</div>
                 </div>
             </div>
-        </div>
-
-        {{-- Total Students --}}
-        <div class="col-lg-4 col-md-6 mb-4">
-            <div class="stats-card card-teal">
-                <div class="stats-icon">
+            <div class="stat-card">
+                <div class="stat-icon-wrap icon-gold">
                     <i class="fas fa-users"></i>
                 </div>
-                <div class="stats-content">
-                    <h3 class="stats-number">{{ $totalStudents }}</h3>
-                    <p class="stats-label">إجمالي الطلاب</p>
+                <div class="stat-info">
+                    <div class="stat-num counter" data-target="{{ $totalStudents }}">{{ $totalStudents }}</div>
+                    <div class="stat-label">إجمالي الطلاب</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    {{-- Charts Section --}}
-    <div class="row">
-        {{-- Grade Distribution Chart --}}
-        <div class="col-lg-7 mb-4">
+        <!-- Charts Row -->
+        <div class="charts-row">
+            <!-- Bar Chart -->
             <div class="chart-card">
-                <div class="chart-header">
-                    <h5 class="chart-title">
-                        <i class="fas fa-chart-bar"></i>
-                        توزيع الطلاب حسب الصف الدراسي
-                    </h5>
-                </div>
-                <div class="chart-body">
-                    <canvas id="gradeChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        {{-- Monthly Registrations Chart --}}
-        <div class="col-lg-5 mb-4">
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h5 class="chart-title">
-                        <i class="fas fa-chart-line"></i>
-                        التسجيلات الشهرية
-                    </h5>
-                    <p class="chart-subtitle">آخر 6 أشهر</p>
-                </div>
-                <div class="chart-body">
-                    <canvas id="monthlyChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- Summary Table --}}
-    <div class="row">
-        <div class="col-12">
-            <div class="summary-card">
-                <div class="summary-header">
-                    <h5 class="summary-title">
-                        <i class="fas fa-table"></i>
-                        ملخص التوزيع حسب الصف
-                    </h5>
-                </div>
-                <div class="summary-body">
-                    <div class="table-responsive">
-                        <table class="summary-table">
-                            <thead>
-                                <tr>
-                                    <th>الصف الدراسي</th>
-                                    <th>عدد الطلاب</th>
-                                    <th>النسبة المئوية</th>
-                                    <th>التمثيل البصري</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @forelse($gradeDistribution as $grade)
-                                    <tr>
-                                        <td>
-                                            <span class="grade-badge">{{ $grade->gradeByAge }}</span>
-                                        </td>
-                                        <td>
-                                            <strong>{{ $grade->count }}</strong>
-                                        </td>
-                                        <td>
-                                            {{ $totalStudents > 0 ? number_format(($grade->count / $totalStudents * 100), 1) : 0 }}%
-                                        </td>
-                                        <td>
-                                            <div class="progress-bar-container">
-                                                <div class="progress-bar-fill"
-                                                     style="width: {{ $totalStudents > 0 ? ($grade->count / $totalStudents * 100) : 0 }}%">
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted">
-                                            لا توجد بيانات
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                <div class="card-header-custom">
+                    <div>
+                        <div class="card-title-custom">
+                            <i class="fas fa-chart-bar"></i>
+                            توزيع الطلاب حسب الصف
+                        </div>
+                        <div class="card-subtitle">توزيع تفصيلي للطلاب على الصفوف الدراسية</div>
                     </div>
                 </div>
+                <canvas id="gradeChart" height="200"></canvas>
+            </div>
+
+            <!-- Line Chart -->
+            <div class="chart-card">
+                <div class="card-header-custom">
+                    <div>
+                        <div class="card-title-custom">
+                            <i class="fas fa-chart-line"></i>
+                            التسجيلات الشهرية
+                        </div>
+                        <div class="card-subtitle">آخر 6 أشهر</div>
+                    </div>
+                </div>
+                <canvas id="monthlyChart" height="200"></canvas>
             </div>
         </div>
+
+        <!-- Summary Table -->
+        <div class="table-card">
+            <div class="card-header-custom">
+                <div class="card-title-custom">
+                    <i class="fas fa-table"></i>
+                    ملخص التوزيع حسب الصف
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>الصف الدراسي</th>
+                            <th>عدد الطلاب</th>
+                            <th>النسبة المئوية</th>
+                            <th>التمثيل البصري</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($gradeDistribution as $grade)
+                        <tr>
+                            <td><span class="grade-chip">{{ $grade->gradeByAge }}</span></td>
+                            <td><strong>{{ $grade->count }}</strong></td>
+                            <td>{{ $totalStudents > 0 ? number_format(($grade->count / $totalStudents * 100), 1) : 0 }}%</td>
+                            <td style="min-width:120px;">
+                                <div class="progress-wrap">
+                                    <div class="progress-fill" style="width:{{ $totalStudents > 0 ? ($grade->count / $totalStudents * 100) : 0 }}%"></div>
+                                </div>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="4" style="text-align:center;color:#9e9e9e;padding:30px;">لا توجد بيانات</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
-
 </div>
-@stop
 
-@section('css')
-<style>
-    /* General Styles */
-    body {
-        background-color: #f4f6f9;
-        font-family: 'Cairo', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    .dashboard-title {
-        color: #2c3e50;
-        font-weight: 600;
-        font-size: 1.8rem;
-    }
-
-    /* Statistics Cards */
-    .stats-card {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        display: flex;
-        align-items: center;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        transition: all 0.3s ease;
-        border: none;
-        height: 100%;
-    }
-
-    .stats-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    }
-
-    .stats-icon {
-        width: 70px;
-        height: 70px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-left: 20px;
-        font-size: 2rem;
-    }
-
-    .card-blue .stats-icon {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-
-    .card-purple .stats-icon {
-        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        color: white;
-    }
-
-    .card-teal .stats-icon {
-        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        color: white;
-    }
-
-    .stats-content {
-        flex: 1;
-    }
-
-    .stats-number {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: #2c3e50;
-        margin: 0;
-        line-height: 1;
-    }
-
-    .stats-label {
-        color: #7f8c8d;
-        font-size: 0.95rem;
-        margin: 8px 0 0 0;
-        font-weight: 500;
-    }
-
-    /* Chart Cards */
-    .chart-card {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-        height: 100%;
-    }
-
-    .chart-header {
-        margin-bottom: 20px;
-        border-bottom: 2px solid #ecf0f1;
-        padding-bottom: 15px;
-    }
-
-    .chart-title {
-        color: #2c3e50;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .chart-title i {
-        color: #667eea;
-        margin-left: 8px;
-    }
-
-    .chart-subtitle {
-        color: #95a5a6;
-        font-size: 0.85rem;
-        margin: 5px 0 0 0;
-    }
-
-    .chart-body {
-        padding: 10px 0;
-    }
-
-    /* Summary Card */
-    .summary-card {
-        background: white;
-        border-radius: 12px;
-        padding: 25px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-    }
-
-    .summary-header {
-        margin-bottom: 20px;
-        border-bottom: 2px solid #ecf0f1;
-        padding-bottom: 15px;
-    }
-
-    .summary-title {
-        color: #2c3e50;
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0;
-    }
-
-    .summary-title i {
-        color: #667eea;
-        margin-left: 8px;
-    }
-
-    /* Table Styles */
-    .summary-table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-
-    .summary-table thead th {
-        background: #f8f9fa;
-        color: #2c3e50;
-        font-weight: 600;
-        padding: 15px;
-        text-align: right;
-        border: none;
-        font-size: 0.95rem;
-    }
-
-    .summary-table thead th:first-child {
-        border-radius: 8px 0 0 0;
-    }
-
-    .summary-table thead th:last-child {
-        border-radius: 0 8px 0 0;
-    }
-
-    .summary-table tbody td {
-        padding: 15px;
-        border-bottom: 1px solid #ecf0f1;
-        color: #34495e;
-        text-align: right;
-    }
-
-    .summary-table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .summary-table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-
-    .grade-badge {
-        display: inline-block;
-        padding: 6px 15px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-
-    .progress-bar-container {
-        width: 100%;
-        height: 8px;
-        background: #ecf0f1;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    .progress-bar-fill {
-        height: 100%;
-        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-        border-radius: 10px;
-        transition: width 0.5s ease;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .stats-card {
-            margin-bottom: 15px;
-        }
-
-        .stats-number {
-            font-size: 2rem;
-        }
-
-        .stats-icon {
-            width: 60px;
-            height: 60px;
-            font-size: 1.5rem;
-        }
-    }
-</style>
-@stop
-
-@section('js')
-<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 <script>
-    // إعدادات الألوان الهادئة
-    const colors = {
-        primary: 'rgba(102, 126, 234, 0.8)',
-        primaryLight: 'rgba(102, 126, 234, 0.2)',
-        secondary: 'rgba(118, 75, 162, 0.8)',
-        secondaryLight: 'rgba(118, 75, 162, 0.2)',
-        accent: 'rgba(79, 172, 254, 0.8)',
-        accentLight: 'rgba(79, 172, 254, 0.2)',
-        success: 'rgba(72, 187, 120, 0.8)',
-        successLight: 'rgba(72, 187, 120, 0.2)',
-    };
-
-    // Grade Distribution Chart - Bar Chart
-    const gradeCtx = document.getElementById('gradeChart').getContext('2d');
-    const gradeLabels = {!! json_encode($gradeDistribution->pluck('gradeByAge')) !!};
-    const gradeData = {!! json_encode($gradeDistribution->pluck('count')) !!};
-
-    const gradeChart = new Chart(gradeCtx, {
-        type: 'bar',
-        data: {
-            labels: gradeLabels,
-            datasets: [{
-                label: 'عدد الطلاب',
-                data: gradeData,
-                backgroundColor: colors.primary,
-                borderColor: colors.primary,
-                borderWidth: 0,
-                borderRadius: 8,
-                barThickness: 40
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(44, 62, 80, 0.9)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    cornerRadius: 8,
-                    displayColors: false
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 12,
-                            weight: '500'
-                        },
-                        color: '#7f8c8d'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)',
-                        drawBorder: false
-                    },
-                    ticks: {
-                        stepSize: 1,
-                        font: {
-                            size: 12
-                        },
-                        color: '#7f8c8d'
-                    }
-                }
-            }
+// Charts
+const gradeCtx = document.getElementById('gradeChart').getContext('2d');
+new Chart(gradeCtx, {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode($gradeDistribution->pluck('gradeByAge')) !!},
+        datasets: [{
+            data: {!! json_encode($gradeDistribution->pluck('count')) !!},
+            backgroundColor: 'rgba(26, 35, 126, 0.75)',
+            borderRadius: 8,
+            barThickness: 36,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: { rtl: true, backgroundColor: '#0d1257' } },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 12 }, color: '#78909c' } },
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { stepSize: 1, font: { family: 'Tajawal' }, color: '#78909c' } }
         }
-    });
+    }
+});
 
-    // Monthly Registrations Chart - Line Chart
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    const monthlyLabels = {!! json_encode($monthlyRegistrations->pluck('month_name')) !!};
-    const monthlyData = {!! json_encode($monthlyRegistrations->pluck('count')) !!};
-
-    const monthlyChart = new Chart(monthlyCtx, {
-        type: 'line',
-        data: {
-            labels: monthlyLabels,
-            datasets: [{
-                label: 'عدد التسجيلات',
-                data: monthlyData,
-                backgroundColor: colors.accentLight,
-                borderColor: colors.accent,
-                borderWidth: 3,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 6,
-                pointBackgroundColor: colors.accent,
-                pointBorderColor: '#fff',
-                pointBorderWidth: 2,
-                pointHoverRadius: 8,
-                pointHoverBackgroundColor: colors.accent,
-                pointHoverBorderColor: '#fff',
-                pointHoverBorderWidth: 3
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(44, 62, 80, 0.9)',
-                    padding: 12,
-                    titleFont: {
-                        size: 14,
-                        weight: 'bold'
-                    },
-                    bodyFont: {
-                        size: 13
-                    },
-                    cornerRadius: 8,
-                    displayColors: false
-                }
-            },
-            scales: {
-                x: {
-                    grid: {
-                        display: false
-                    },
-                    ticks: {
-                        font: {
-                            size: 11,
-                            weight: '500'
-                        },
-                        color: '#7f8c8d',
-                        maxRotation: 45,
-                        minRotation: 45
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)',
-                        drawBorder: false
-                    },
-                    ticks: {
-                        stepSize: 1,
-                        font: {
-                            size: 12
-                        },
-                        color: '#7f8c8d'
-                    }
-                }
-            }
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+        labels: {!! json_encode($monthlyRegistrations->pluck('month_name')) !!},
+        datasets: [{
+            data: {!! json_encode($monthlyRegistrations->pluck('count')) !!},
+            backgroundColor: 'rgba(89, 107, 192, 0.12)',
+            borderColor: '#3949ab',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointBackgroundColor: '#1a237e',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false }, tooltip: { rtl: true, backgroundColor: '#0d1257' } },
+        scales: {
+            x: { grid: { display: false }, ticks: { font: { family: 'Tajawal', size: 11 }, color: '#78909c', maxRotation: 45 } },
+            y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)', drawBorder: false }, ticks: { stepSize: 1, font: { family: 'Tajawal' }, color: '#78909c' } }
         }
-    });
+    }
+});
 
-    // تحريك الأرقام عند تحميل الصفحة
-    document.addEventListener('DOMContentLoaded', function() {
-        const numbers = document.querySelectorAll('.stats-number');
-        numbers.forEach(num => {
-            const target = parseInt(num.innerText);
-            let current = 0;
-            const increment = target / 50;
-            const timer = setInterval(() => {
-                current += increment;
-                if (current >= target) {
-                    num.innerText = target;
-                    clearInterval(timer);
-                } else {
-                    num.innerText = Math.floor(current);
-                }
-            }, 20);
-        });
-    });
+// Counter animation
+document.querySelectorAll('.counter').forEach(el => {
+    const target = parseInt(el.dataset.target);
+    let cur = 0;
+    const step = Math.ceil(target / 40);
+    const timer = setInterval(() => {
+        cur = Math.min(cur + step, target);
+        el.textContent = cur;
+        if (cur >= target) clearInterval(timer);
+    }, 25);
+});
 </script>
-@stop
+</body>
+</html>

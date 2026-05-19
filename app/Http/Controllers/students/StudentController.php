@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers\students;
 
+use App\Exports\StudentsExport;
 use App\Http\Controllers\Controller;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Maatwebsite\Excel\Facades\Excel;
 
 class StudentController extends Controller
 {
@@ -14,38 +16,9 @@ class StudentController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Student::query();
-
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('IDNumber', 'like', "%{$search}%")
-                  ->orWhere('studentName', 'like', "%{$search}%")
-                  ->orWhere('FatherName', 'like', "%{$search}%")
-                  ->orWhere('lastName', 'like', "%{$search}%")
-                   ->orWhere('gradeByAge', 'like', "%{$search}%")
-                    ->orWhere('paymentStatus', 'like', "%{$search}%")
-                     ->orWhere('RegistrationStatusMinistry', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter by gender
-        if ($request->has('gender') && $request->gender != '') {
-            $query->where('gender', $request->gender);
-        }
-
-        // Filter by health condition
-        if ($request->has('healthCondition') && $request->healthCondition != '') {
-            $query->where('healthCondition', $request->healthCondition);
-        }
-
-        // Filter by orphan status
-        if ($request->has('OrphanStatus') && $request->OrphanStatus != '') {
-            $query->where('OrphanStatus', $request->OrphanStatus);
-        }
-
-        $students = $query->orderBy('registrationDate', 'desc')->paginate(10);
+        $students = $this->filterStudents($request)
+            ->orderBy('registrationDate', 'desc')
+            ->paginate(30);
 
         return view('students.index', compact('students'));
     }
@@ -86,7 +59,9 @@ class StudentController extends Controller
             if (isset($data['registrationDate'])) {
                 $data['registrationDate'] = date('Y-m-d', strtotime($data['registrationDate']));
             }
-
+            $data['gradeByAge'] = Student::determineGradeByAge(
+                $request->dateOfBirth
+            );
             Student::create($data);
 
             return redirect()->route('students.index')
@@ -147,6 +122,9 @@ class StudentController extends Controller
             if (isset($data['registrationDate'])) {
                 $data['registrationDate'] = date('Y-m-d', strtotime($data['registrationDate']));
             }
+            $data['gradeByAge'] = Student::determineGradeByAge(
+                $request->dateOfBirth
+            );
 
             $student->update($data);
 
@@ -179,9 +157,98 @@ class StudentController extends Controller
     /**
      * Export students to Excel
      */
-    public function export()
+    public function exportExcel(Request $request)
     {
-        // يمكن إضافة وظيفة التصدير لاحقاً
-        return redirect()->back()->with('info', 'وظيفة التصدير قيد التطوير');
+        $students = $this->filterStudents($request)
+            ->orderBy('registrationDate', 'desc')
+            ->get();
+
+        return Excel::download(
+            new StudentsExport($students),
+            'students.xlsx'
+        );
+    }
+
+
+
+    private function filterStudents(Request $request)
+    {
+        $query = Student::query();
+
+        // البحث باسم الطالب
+        if ($request->filled('studentName')) {
+            $query->where('studentName', 'like', '%' . $request->studentName . '%');
+        }
+
+        // البحث باسم الأب
+        if ($request->filled('FatherName')) {
+            $query->where('FatherName', 'like', '%' . $request->FatherName . '%');
+        }
+
+        // البحث باسم الجد
+        if ($request->filled('GrandfatherName')) {
+            $query->where('GrandfatherName', 'like', '%' . $request->GrandfatherName . '%');
+        }
+
+        // البحث باسم العائلة
+        if ($request->filled('lastName')) {
+            $query->where('lastName', 'like', '%' . $request->lastName . '%');
+        }
+
+        // البحث برقم الهوية
+        if ($request->filled('IDNumber')) {
+            $query->where('IDNumber', 'like', '%' . $request->IDNumber . '%');
+        }
+
+        // البحث برقم الهاتف
+        if ($request->filled('Parentmobile')) {
+            $query->where('Parentmobile', 'like', '%' . $request->Parentmobile . '%');
+        }
+
+        // البحث بالصف
+        if ($request->filled('gradeByAge')) {
+            $query->where('gradeByAge', 'like', '%' . $request->gradeByAge . '%');
+        }
+
+        // البحث بآخر شهادة
+        if ($request->filled('lastCertificate')) {
+            $query->where('lastCertificateObtained', 'like', '%' . $request->lastCertificate . '%');
+        }
+
+        // الجنس
+        if ($request->filled('gender')) {
+            $query->where('gender', $request->gender);
+        }
+
+        // الحالة الصحية
+        if ($request->filled('healthCondition')) {
+            $query->where('healthCondition', $request->healthCondition);
+        }
+
+        // حالة اليتم
+        if ($request->filled('OrphanStatus')) {
+            $query->where('OrphanStatus', $request->OrphanStatus);
+        }
+
+        // حالة الدفع
+        if ($request->filled('paymentStatus')) {
+            $query->where('paymentStatus', 'like', '%' . $request->paymentStatus . '%');
+        }
+
+        // حالة التسجيل في الوزارة
+        if ($request->filled('ministryStatus')) {
+            $query->where('RegistrationStatusMinistry', 'like', '%' . $request->ministryStatus . '%');
+        }
+
+        // نطاق تاريخ التسجيل
+        if ($request->filled('dateFrom')) {
+            $query->whereDate('registrationDate', '>=', $request->dateFrom);
+        }
+
+        if ($request->filled('dateTo')) {
+            $query->whereDate('registrationDate', '<=', $request->dateTo);
+        }
+
+        return $query;
     }
 }

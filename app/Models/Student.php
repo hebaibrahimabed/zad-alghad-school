@@ -5,11 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use App\Models\ParentModel;
+use Carbon\Carbon;
 class Student extends Model
 {
     use HasFactory;
     use SoftDeletes;
+
 
     protected $primaryKey = 'IDNumber';
     public $incrementing = false;
@@ -97,5 +99,42 @@ class Student extends Model
     {
         return $this->dateOfBirth ? $this->dateOfBirth->age : null;
     }
+public static function determineGradeByAge($birthDate)
+{
+    $birthDate = Carbon::parse($birthDate);
+
+    // سنة التسجيل الحالية
+    $currentYear = now()->year;
+
+    // تاريخ الاعتماد للمدرسة
+    $cutoffDate = Carbon::create($currentYear, 1, 31);
+
+    // حساب العمر عند تاريخ الاعتماد
+    $age = $birthDate->diffInYears($cutoffDate);
+
+    return match ($age) {
+        3 => 'بستان',
+        4 => 'بستان',
+        5 => 'تمهيدي',
+        6 => 'الأول',
+        7 => 'الثاني',
+        8 => 'الثالث',
+        9 => 'الرابع',
+        10 => 'الخامس',
+        11 => 'السادس',
+        12 => 'السابع',
+        13 => 'الثامن',
+        14 => 'التاسع',
+        15 => 'العاشر',
+        16 => 'الحادي عشر',
+        17 => 'الثاني عشر',
+        default => 'غير محدد',
+    };
+}
+
+public function parent()
+{
+    return $this->belongsTo(ParentModel::class, 'parent_id');
+}
 
 }

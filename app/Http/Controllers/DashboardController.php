@@ -21,6 +21,7 @@ class DashboardController extends Controller
 
         // إجمالي عدد الطلاب
         $totalStudents = $maleStudents + $femaleStudents;
+       
 
         // التوزيع حسب الصف الدراسي
         $gradeDistribution = Student::query()->select('gradeByAge', DB::raw('count(*) as count'))
