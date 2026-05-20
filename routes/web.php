@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\payment_sys\SchoolClassController as Payment_sysSchoolClassController;
+use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\students\StudentController;
 use Illuminate\Support\Facades\Route;
 
@@ -32,13 +34,23 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard.index');
-    
+
  // Export Students to Excel
      Route::get('/students/export-excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');
 
 
     // Students Management
     Route::resource('students', StudentController::class);
+    Route::resource('classes', Payment_sysSchoolClassController::class);
+    // ملاحظة: Route::resource ينشئ تلقائياً:
+// GET    /classes              → index
+// GET    /classes/create       → create
+// POST   /classes              → store
+// GET    /classes/{class}      → show
+// GET    /classes/{class}/edit → edit
+// PUT    /classes/{class}      → update
+// DELETE /classes/{class}      → destroy
+
 
 
 
