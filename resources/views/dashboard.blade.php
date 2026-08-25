@@ -479,7 +479,7 @@
             <i class="fas fa-users nav-icon"></i>
             <span>قائمة الطلاب</span>
         </a>
-        <a href="{{ route('students.create') }}" class="nav-item">
+        <a href="{{ route('students.register') }}" class="nav-item">
             <i class="fas fa-user-plus nav-icon"></i>
             <span>إضافة طالب</span>
         </a>
@@ -518,7 +518,7 @@
 
         <!-- Quick Actions -->
         <div class="quick-actions">
-            <a href="{{ route('students.create') }}" class="action-btn action-btn-primary">
+            <a href="{{ route('students.register') }}" class="action-btn action-btn-primary">
                 <i class="fas fa-user-plus"></i> إضافة طالب جديد
             </a>
             <a href="{{ route('students.index') }}" class="action-btn action-btn-outline">

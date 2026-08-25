@@ -19,32 +19,26 @@ class StudentsExport implements FromCollection
 
     public function collection()
     {
-  return $this->students->map(function ($student) {
-    $healthStatuses = [
-    'Healthy' => 'سليم',
-    'disabled' => 'ذوي إعاقة',
-    'injured' => 'مصاب',
-];
+        return $this->students->map(function ($student) {
+            $healthStatuses = [
+                'Healthy' => 'سليم',
+                'disabled' => 'ذوي إعاقة',
+                'injured' => 'مصاب',
+            ];
 
-$orphanStatuses = [
-    'orphan' => 'يتيم',
-    'not orphan' => 'غير يتيم',
-];
             return [
                 'اسم الطالب' => $student->full_name,
                 'رقم الهوية' => $student->IDNumber,
                 'الصف' => $student->gradeByAge,
                 'رقم الهاتف' => $student->Parentmobile,
-
-
-    'الحالة الصحية' => $healthStatuses[$student->healthCondition] ?? 'غير محدد',
-    'حالة اليتيم' => $orphanStatuses[$student->OrphanStatus] ?? 'غير محدد',
-
+                'الحالة الصحية' => $healthStatuses[$student->healthCondition] ?? 'غير محدد',
             ];
+            // ملاحظة: حالة اليتم انتقلت إلى جدول parents (orphan_status_student)
+            // سيتم إعادة إضافتها هنا بعد ربط الطالب بولي الأمر في الواجهة
         });
     }
 
-public function headings(): array
+    public function headings(): array
     {
         return [
             'اسم الطالب',
@@ -52,7 +46,6 @@ public function headings(): array
             'الصف',
             'رقم الهاتف',
             'الحالة الصحية',
-            'حالة اليتيم'
         ];
     }
 }

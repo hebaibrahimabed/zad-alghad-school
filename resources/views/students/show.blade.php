@@ -195,7 +195,7 @@
         </div>
     </div>
     <div class="profile-actions">
-        <a href="{{ route('students.edit', $student->IDNumber) }}" class="paction-btn paction-edit">
+        <a href="{{ route('students.edit', $student->id) }}" class="paction-btn paction-edit">
             <i class="fas fa-edit"></i> تعديل
         </a>
         <a href="{{ route('students.index') }}" class="paction-btn paction-back">
@@ -341,7 +341,7 @@
         <h6><i class="fas fa-exclamation-triangle me-2"></i>منطقة الخطر</h6>
         <p>حذف بيانات الطالب نهائياً — لا يمكن التراجع عن هذا الإجراء</p>
     </div>
-    <form action="{{ route('students.destroy', $student->IDNumber) }}" method="POST"
+    <form action="{{ route('students.destroy', $student->id) }}" method="POST"
           onsubmit="return confirm('هل أنت متأكد من حذف بيانات الطالب {{ $student->full_name }}؟')">
         @csrf @method('DELETE')
         <button type="submit" class="btn-delete">

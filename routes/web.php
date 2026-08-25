@@ -3,8 +3,8 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\payment_sys\SchoolClassController as Payment_sysSchoolClassController;
-use App\Http\Controllers\SchoolClassController;
 use App\Http\Controllers\students\StudentController;
+use App\Http\Controllers\students\StudentRegistrationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,6 +38,15 @@ Route::middleware(['auth'])->group(function () {
  // Export Students to Excel
      Route::get('/students/export-excel', [StudentController::class, 'exportExcel'])->name('students.export-excel');
 
+    // ============================================
+    // معالج التسجيل الشامل (طالب + ولي أمر + تسجيل + خصومات)
+    // ملاحظة: يجب تسجيلها قبل Route::resource('students', ...) وإلا
+    // سيطابقها الـ resource كـ students/{student} برقم "register"
+    // ============================================
+    Route::get('/students/register', [StudentRegistrationController::class, 'create'])->name('students.register');
+    Route::post('/students/register', [StudentRegistrationController::class, 'store'])->name('students.register.store');
+    Route::get('/parents/lookup', [StudentRegistrationController::class, 'lookupParent'])->name('parents.lookup');
+    Route::get('/students/register/check-discounts', [StudentRegistrationController::class, 'checkDiscounts'])->name('students.register.check-discounts');
 
     // Students Management
     Route::resource('students', StudentController::class);

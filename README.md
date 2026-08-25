@@ -139,6 +139,8 @@ app/
 │   ├── Controllers/
 │   │   ├── DashboardController.php
 │   │   ├── SchoolClassController.php
+        └── payment_sys
+            └── SchoolClassController.php
 │   │   └── students/
 │   │       └── StudentController.php
 │   └── Requests/

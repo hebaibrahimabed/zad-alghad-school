@@ -225,20 +225,9 @@ class StudentController extends Controller
             $query->where('healthCondition', $request->healthCondition);
         }
 
-        // حالة اليتم
-        if ($request->filled('OrphanStatus')) {
-            $query->where('OrphanStatus', $request->OrphanStatus);
-        }
-
-        // حالة الدفع
-        if ($request->filled('paymentStatus')) {
-            $query->where('paymentStatus', 'like', '%' . $request->paymentStatus . '%');
-        }
-
-        // حالة التسجيل في الوزارة
-        if ($request->filled('ministryStatus')) {
-            $query->where('RegistrationStatusMinistry', 'like', '%' . $request->ministryStatus . '%');
-        }
+        // ملاحظة: تم نقل حالة اليتم إلى جدول parents، وحالة الدفع إلى payments،
+        // وحالة تسجيل الوزارة إلى registrations. سيتم ربط الفلترة بها لاحقاً
+        // عبر علاقات Eloquent بعد بناء واجهات هذه الجداول.
 
         // نطاق تاريخ التسجيل
         if ($request->filled('dateFrom')) {

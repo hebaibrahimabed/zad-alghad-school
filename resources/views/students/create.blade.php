@@ -189,7 +189,7 @@
 </div>
 @endif
 
-<form action="{{ isset($student) ? route('students.update', $student->IDNumber) : route('students.store') }}" method="POST">
+<form action="{{ isset($student) ? route('students.update', $student->id) : route('students.store') }}" method="POST">
     @csrf
     @if(isset($student)) @method('PUT') @endif
 
@@ -366,18 +366,6 @@
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>
-
-                <div class="field-wrap">
-                    <label><i class="fas fa-child"></i> حالة اليتم <span class="req">*</span></label>
-                    <select name="OrphanStatus" class="@error('OrphanStatus') is-invalid @enderror" required>
-                        <option value="">-- اختر حالة اليتم --</option>
-                        <option value="orphan" {{ old('OrphanStatus', $student->OrphanStatus ?? '') == 'orphan' ? 'selected' : '' }}>يتيم</option>
-                        <option value="not orphan" {{ old('OrphanStatus', $student->OrphanStatus ?? '') == 'not orphan' ? 'selected' : '' }}>غير يتيم</option>
-                    </select>
-                    @error('OrphanStatus')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
             </div>
         </div>
     </div>
@@ -397,28 +385,6 @@
                            value="{{ old('registrationDate', isset($student) ? $student->registrationDate->format('Y-m-d') : date('Y-m-d')) }}"
                            required>
                     @error('registrationDate')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="field-wrap">
-                    <label><i class="fas fa-money-bill-wave"></i> حالة الدفع</label>
-                    <input type="text" name="paymentStatus"
-                           class="@error('paymentStatus') is-invalid @enderror"
-                           value="{{ old('paymentStatus', $student->paymentStatus ?? '') }}"
-                           placeholder="حالة الدفع">
-                    @error('paymentStatus')
-                        <span class="invalid-feedback">{{ $message }}</span>
-                    @enderror
-                </div>
-
-                <div class="field-wrap">
-                    <label><i class="fas fa-building"></i> حالة التسجيل في الوزارة</label>
-                    <input type="text" name="RegistrationStatusMinistry"
-                           class="@error('RegistrationStatusMinistry') is-invalid @enderror"
-                           value="{{ old('RegistrationStatusMinistry', $student->RegistrationStatusMinistry ?? '') }}"
-                           placeholder="حالة تسجيل الوزارة">
-                    @error('RegistrationStatusMinistry')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>

@@ -74,6 +74,7 @@ class SchoolClassController extends Controller
     {
         if ($class->registrations()->count() > 0) {
             return redirect()->route('classes.index')
+            
                 ->with('error', 'لا يمكن حذف الشعبة لوجود طلاب مسجلين فيها');
         }
 

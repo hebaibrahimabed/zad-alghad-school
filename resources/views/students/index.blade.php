@@ -365,23 +365,11 @@
                     <option value="injured" {{ request('healthCondition') == 'injured' ? 'selected' : '' }}>مصاب</option>
                 </select>
             </div>
-            <div class="field-group">
-                <label><i class="fas fa-child fa-xs"></i> حالة اليتم</label>
-                <select name="OrphanStatus" class="form-select">
-                    <option value="">الكل</option>
-                    <option value="orphan" {{ request('OrphanStatus') == 'orphan' ? 'selected' : '' }}>يتيم</option>
-                    <option value="not orphan" {{ request('OrphanStatus') == 'not orphan' ? 'selected' : '' }}>غير يتيم</option>
-                </select>
-            </div>
-            <div class="field-group">
-                <label><i class="fas fa-file-invoice-dollar fa-xs"></i> حالة الدفع</label>
-                <input type="text" name="paymentStatus" class="form-control"
-                       placeholder="حالة الدفع..."
-                       value="{{ request('paymentStatus') }}">
-            </div>
         </div>
 
-        {{-- Row 4: Date range + Ministry --}}
+        {{-- Row 4: Date range --}}
+        {{-- ملاحظة: حالة اليتم/الدفع/تسجيل الوزارة انتقلت لجداول parents/payments/registrations
+             وستعود هنا كفلاتر بعد بناء واجهاتها وربطها بعلاقات الطالب --}}
         <div class="search-grid-2" style="margin-top:14px;">
             <div class="field-group">
                 <label><i class="fas fa-calendar fa-xs"></i> تاريخ التسجيل (من)</label>
@@ -390,12 +378,6 @@
             <div class="field-group">
                 <label><i class="fas fa-calendar fa-xs"></i> تاريخ التسجيل (إلى)</label>
                 <input type="date" name="dateTo" class="form-control" value="{{ request('dateTo') }}">
-            </div>
-            <div class="field-group">
-                <label><i class="fas fa-building fa-xs"></i> حالة التسجيل في الوزارة</label>
-                <input type="text" name="ministryStatus" class="form-control"
-                       placeholder="حالة تسجيل الوزارة..."
-                       value="{{ request('ministryStatus') }}">
             </div>
         </div>
 
@@ -437,7 +419,7 @@
                 <i class="fas fa-file-excel"></i> تصدير Excel
             </a>
 
-            <a href="{{ route('students.create') }}" class="add-btn">
+            <a href="{{ route('students.register') }}" class="add-btn">
                 <i class="fas fa-plus"></i> إضافة طالب
             </a>
         </div>
@@ -495,13 +477,13 @@
                     <td>{{ $student->registrationDate->format('Y-m-d') }}</td>
                     <td>
                         <div class="action-group">
-                            <a href="{{ route('students.show', $student->IDNumber) }}" class="btn-icon btn-view" title="عرض">
+                            <a href="{{ route('students.show', $student->id) }}" class="btn-icon btn-view" title="عرض">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{{ route('students.edit', $student->IDNumber) }}" class="btn-icon btn-edit" title="تعديل">
+                            <a href="{{ route('students.edit', $student->id) }}" class="btn-icon btn-edit" title="تعديل">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="{{ route('students.destroy', $student->IDNumber) }}" method="POST" style="display:inline"
+                            <form action="{{ route('students.destroy', $student->id) }}" method="POST" style="display:inline"
                                   onsubmit="return confirm('هل أنت متأكد من حذف هذا الطالب؟')">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="btn-icon btn-del" title="حذف">
