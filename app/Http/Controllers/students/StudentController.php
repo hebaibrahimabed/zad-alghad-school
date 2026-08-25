@@ -24,55 +24,10 @@ class StudentController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
+     * ملاحظة: create()/store() تم حذفهما من هنا — إنشاء طالب جديد صار
+     * حصراً عبر معالج التسجيل الشامل (راجع StudentRegistrationController@create/store)
+     * الذي يربط الطالب بولي أمر وتسجيل بشعبة وخصومات في عملية واحدة.
      */
-    public function create()
-    {
-        return view('students.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        $validator = Validator::make(
-            $request->all(),
-            Student::validationRules(),
-            Student::validationMessages()
-        );
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
-
-        try {
-            $data = $request->all();
-
-            // تأكد من تحويل التواريخ بشكل صحيح
-            if (isset($data['dateOfBirth'])) {
-                $data['dateOfBirth'] = date('Y-m-d', strtotime($data['dateOfBirth']));
-            }
-
-            if (isset($data['registrationDate'])) {
-                $data['registrationDate'] = date('Y-m-d', strtotime($data['registrationDate']));
-            }
-            $data['gradeByAge'] = Student::determineGradeByAge(
-                $request->dateOfBirth
-            );
-            Student::create($data);
-
-            return redirect()->route('students.index')
-                ->with('success', 'تم إضافة الطالب بنجاح');
-        } catch (\Exception $e) {
-
-            return redirect()->back()
-                ->with('error', 'حدث خطأ أثناء إضافة الطالب: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
 
     /**
      * Display the specified resource.

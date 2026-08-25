@@ -235,8 +235,8 @@
             <i class="fas fa-users ni"></i>
             <span>قائمة الطلاب</span>
         </a>
-        <a href="{{ route('students.create') }}"
-           class="nav-link-item {{ request()->routeIs('students.create') ? 'active' : '' }}">
+        <a href="{{ route('students.register') }}"
+           class="nav-link-item {{ request()->routeIs('students.register') ? 'active' : '' }}">
             <i class="fas fa-user-plus ni"></i>
             <span>إضافة طالب جديد</span>
         </a>

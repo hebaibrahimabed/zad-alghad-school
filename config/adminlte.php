@@ -204,10 +204,10 @@ return [
     ],
     [
         'text' => 'إضافة طالب',
-        'url'  => 'students/create',
+        'url'  => 'students/register',
         'icon' => 'fas fa-user-plus',
     ],
-    
+
     ],
 
     /*

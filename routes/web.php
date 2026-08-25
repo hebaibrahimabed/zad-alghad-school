@@ -49,7 +49,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/students/register/check-discounts', [StudentRegistrationController::class, 'checkDiscounts'])->name('students.register.check-discounts');
 
     // Students Management
-    Route::resource('students', StudentController::class);
+    // ملاحظة: create/store مستثناة لأن إنشاء الطالب صار حصراً عبر
+    // معالج التسجيل الشامل (students.register) — راجع StudentRegistrationController
+    Route::resource('students', StudentController::class)->except(['create', 'store']);
     Route::resource('classes', Payment_sysSchoolClassController::class);
     // ملاحظة: Route::resource ينشئ تلقائياً:
 // GET    /classes              → index
