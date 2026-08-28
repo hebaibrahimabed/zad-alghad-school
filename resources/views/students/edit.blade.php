@@ -1,4 +1,4 @@
-{{-- resources/views/students/create.blade.php  (وكذلك edit.blade.php بنفس البنية) --}}
+{{-- resources/views/students/edit.blade.php --}}
 @extends('layouts.zad')
 
 @section('title', isset($student) ? 'تعديل بيانات الطالب' : 'إضافة طالب جديد')
@@ -328,6 +328,25 @@
                     @error('Parentmobile')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
+                </div>
+            </div>
+
+            <div class="field-row cols-2">
+                <div class="field-wrap">
+                    <label><i class="fas fa-user-shield"></i> ولي الأمر المرتبط</label>
+                    <select name="parent_id" class="@error('parent_id') is-invalid @enderror">
+                        <option value="">-- بدون ولي أمر مرتبط --</option>
+                        @foreach($parents as $p)
+                            <option value="{{ $p->id }}"
+                                {{ old('parent_id', $student->parent_id ?? '') == $p->id ? 'selected' : '' }}>
+                                {{ $p->first_name }} {{ $p->second_name }} {{ $p->third_name }} — {{ $p->national_id }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('parent_id')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                    <div class="hint">لتعديل بيانات ولي الأمر نفسه (هاتف/عنوان)، راجع صفحة أولياء الأمور.</div>
                 </div>
             </div>
 

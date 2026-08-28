@@ -189,12 +189,12 @@
             @if($student->gradeByAge)
                 <span class="pbadge pbadge-gold">📚 {{ $student->gradeByAge }}</span>
             @endif
-            @if($student->OrphanStatus == 'orphan')
-                <span class="pbadge" style="background:rgba(239,83,80,0.15);border-color:rgba(239,83,80,0.3);color:#ef9a9a;">يتيم</span>
-            @endif
         </div>
     </div>
     <div class="profile-actions">
+        <a href="{{ route('registrations.index', $student->id) }}" class="paction-btn paction-edit">
+            <i class="fas fa-file-alt"></i> التسجيلات
+        </a>
         <a href="{{ route('students.edit', $student->id) }}" class="paction-btn paction-edit">
             <i class="fas fa-edit"></i> تعديل
         </a>

@@ -2,7 +2,11 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\ParentController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\payment_sys\SchoolClassController as Payment_sysSchoolClassController;
+use App\Http\Controllers\RegistrationController;
 use App\Http\Controllers\students\StudentController;
 use App\Http\Controllers\students\StudentRegistrationController;
 use Illuminate\Support\Facades\Route;
@@ -61,6 +65,36 @@ Route::middleware(['auth'])->group(function () {
 // GET    /classes/{class}/edit → edit
 // PUT    /classes/{class}      → update
 // DELETE /classes/{class}      → destroy
+
+    // ============================================
+    // أولياء الأمور (بدون create/store — الإنشاء فقط عبر معالج التسجيل)
+    // ============================================
+    Route::resource('parents', ParentController::class)->only(['index', 'show', 'edit', 'update', 'destroy']);
+
+    // ============================================
+    // التسجيلات (Registrations)
+    // ============================================
+    Route::get('/students/{student}/registrations', [RegistrationController::class, 'index'])->name('registrations.index');
+    Route::get('/registrations/{registration}', [RegistrationController::class, 'show'])->name('registrations.show');
+    Route::get('/registrations/{registration}/edit', [RegistrationController::class, 'edit'])->name('registrations.edit');
+    Route::put('/registrations/{registration}', [RegistrationController::class, 'update'])->name('registrations.update');
+    Route::delete('/registrations/{registration}', [RegistrationController::class, 'destroy'])->name('registrations.destroy');
+
+    // ============================================
+    // الدفعات المالية (Payments)
+    // ============================================
+    Route::get('/registrations/{registration}/payments', [PaymentController::class, 'index'])->name('payments.index');
+    Route::get('/registrations/{registration}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
+    Route::post('/registrations/{registration}/payments', [PaymentController::class, 'store'])->name('payments.store');
+    Route::get('/payments/{payment}/edit', [PaymentController::class, 'edit'])->name('payments.edit');
+    Route::put('/payments/{payment}', [PaymentController::class, 'update'])->name('payments.update');
+    Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
+
+    // ============================================
+    // إدارة أنواع الخصومات (Discounts)
+    // ============================================
+    Route::patch('/discounts/{discount}/toggle-active', [DiscountController::class, 'toggleActive'])->name('discounts.toggle-active');
+    Route::resource('discounts', DiscountController::class)->except(['show']);
 
 
 

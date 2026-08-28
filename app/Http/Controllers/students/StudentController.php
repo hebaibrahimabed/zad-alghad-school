@@ -4,9 +4,10 @@ namespace App\Http\Controllers\students;
 
 use App\Exports\StudentsExport;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateStudentRequest;
+use App\Models\ParentModel;
 use App\Models\Student;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class StudentController extends Controller
@@ -44,43 +45,20 @@ class StudentController extends Controller
     public function edit(string $id)
     {
         $student = Student::findOrFail($id);
-        return view('students.edit', compact('student'));
+        $parents = ParentModel::orderBy('first_name')->get();
+        return view('students.edit', compact('student', 'parents'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateStudentRequest $request, string $id)
     {
         $student = Student::findOrFail($id);
-
-        $validator = Validator::make(
-            $request->all(),
-            Student::validationRules($id),
-            Student::validationMessages()
-        );
-
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        $data = $request->validated();
+        $data['gradeByAge'] = Student::determineGradeByAge($data['dateOfBirth']);
 
         try {
-            $data = $request->all();
-
-            // تأكد من تحويل التواريخ بشكل صحيح
-            if (isset($data['dateOfBirth'])) {
-                $data['dateOfBirth'] = date('Y-m-d', strtotime($data['dateOfBirth']));
-            }
-
-            if (isset($data['registrationDate'])) {
-                $data['registrationDate'] = date('Y-m-d', strtotime($data['registrationDate']));
-            }
-            $data['gradeByAge'] = Student::determineGradeByAge(
-                $request->dateOfBirth
-            );
-
             $student->update($data);
 
             return redirect()->route('students.index')

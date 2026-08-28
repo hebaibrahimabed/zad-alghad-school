@@ -240,6 +240,20 @@
             <i class="fas fa-user-plus ni"></i>
             <span>إضافة طالب جديد</span>
         </a>
+
+        <div class="nav-section">أولياء الأمور</div>
+        <a href="{{ route('parents.index') }}"
+           class="nav-link-item {{ request()->routeIs('parents.*') ? 'active' : '' }}">
+            <i class="fas fa-user-shield ni"></i>
+            <span>قائمة أولياء الأمور</span>
+        </a>
+
+        <div class="nav-section">الشؤون المالية</div>
+        <a href="{{ route('discounts.index') }}"
+           class="nav-link-item {{ request()->routeIs('discounts.*') ? 'active' : '' }}">
+            <i class="fas fa-percent ni"></i>
+            <span>إدارة الخصومات</span>
+        </a>
     </nav>
 
     <div class="sidebar-footer">
