@@ -13,6 +13,12 @@
     table.zad-table { width:100%; border-collapse:collapse; }
     table.zad-table th { background:#f8f9ff; color:#1a237e; font-size:0.8rem; padding:10px 14px; text-align:right; }
     table.zad-table td { padding:10px 14px; font-size:0.85rem; border-bottom:1px solid #f0f2fa; }
+    .add-discount-form { display:flex; gap:10px; align-items:flex-end; margin-top:16px; padding-top:16px; border-top:1px solid #f0f2fa; flex-wrap:wrap; }
+    .add-discount-form .field-wrap { flex:1; min-width:180px; }
+    .add-discount-form label { display:block; font-size:0.78rem; color:#78909c; margin-bottom:6px; font-weight:600; }
+    .add-discount-form select, .add-discount-form input { width:100%; border:2px solid #e8eaf6; border-radius:9px; padding:9px 12px; font-family:'Tajawal',sans-serif; font-size:0.85rem; }
+    .btn-add-discount { background: linear-gradient(135deg,#0d1257,#3949ab); color:white; border:none; border-radius:9px; padding:10px 20px; font-weight:700; cursor:pointer; white-space:nowrap; }
+    .btn-remove { border:none; background:none; cursor:pointer; color:#e53935; }
 </style>
 
 <div style="margin-bottom:18px;">
@@ -20,6 +26,13 @@
         <i class="fas fa-arrow-right"></i> رجوع لتسجيلات الطالب
     </a>
 </div>
+
+@if(session('success'))
+<div style="background:#e8f5e9; color:#2e7d32; padding:14px 20px; border-radius:12px; margin-bottom:16px; font-weight:600;">{{ session('success') }}</div>
+@endif
+@if(session('error'))
+<div style="background:#ffebee; color:#c62828; padding:14px 20px; border-radius:12px; margin-bottom:16px; font-weight:600;">{{ session('error') }}</div>
+@endif
 
 <div class="info-card">
     <h5><i class="fas fa-file-alt"></i> بيانات التسجيل</h5>
@@ -39,17 +52,47 @@
         <p style="color:#90a4ae;">لا يوجد خصومات مطبّقة على هذا التسجيل.</p>
     @else
         <table class="zad-table">
-            <thead><tr><th>الخصم</th><th>القيمة المطبّقة</th><th>السبب</th></tr></thead>
+            <thead><tr><th>الخصم</th><th>القيمة المطبّقة</th><th>السبب</th><th>إجراءات</th></tr></thead>
             <tbody>
                 @foreach($registration->discounts as $sd)
                 <tr>
                     <td>{{ $sd->discount->name ?? '—' }}</td>
                     <td>{{ $sd->applied_value }}</td>
                     <td>{{ $sd->reason }}</td>
+                    <td>
+                        <form action="{{ route('registrations.discounts.remove', [$registration->id, $sd->id]) }}" method="POST"
+                              onsubmit="return confirm('تأكيد إزالة هذا الخصم؟');">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn-remove" title="إزالة"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
+    @endif
+
+    @if($availableDiscounts->isNotEmpty())
+    <form action="{{ route('registrations.discounts.add', $registration->id) }}" method="POST" class="add-discount-form">
+        @csrf
+        <div class="field-wrap">
+            <label>إضافة خصم يدوياً</label>
+            <select name="discount_id" required>
+                <option value="">-- اختر خصم --</option>
+                @foreach($availableDiscounts as $d)
+                    <option value="{{ $d->id }}">
+                        {{ $d->name }} ({{ $d->type == 'general' ? 'عام' : 'خاص' }}) —
+                        {{ $d->value_type == 'percentage' ? $d->value.'%' : number_format($d->value,2).' ₪' }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+        <div class="field-wrap">
+            <label>السبب</label>
+            <input type="text" name="reason" required placeholder="مثال: حالة اجتماعية خاصة">
+        </div>
+        <button type="submit" class="btn-add-discount"><i class="fas fa-plus"></i> إضافة</button>
+    </form>
     @endif
 </div>
 

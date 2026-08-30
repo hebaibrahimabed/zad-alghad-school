@@ -78,6 +78,7 @@
                         <span class="status-badge status-{{ $payment->status }}">{{ $statusLabels[$payment->status] ?? $payment->status }}</span>
                     </td>
                     <td>
+                        <a href="{{ route('payments.receipt', $payment->id) }}" target="_blank" class="btn-icon" title="طباعة إيصال"><i class="fas fa-print"></i></a>
                         <a href="{{ route('payments.edit', $payment->id) }}" class="btn-icon" title="تعديل"><i class="fas fa-edit"></i></a>
                         <form action="{{ route('payments.destroy', $payment->id) }}" method="POST" style="display:inline" onsubmit="return confirm('تأكيد حذف هذه الدفعة؟');">
                             @csrf @method('DELETE')

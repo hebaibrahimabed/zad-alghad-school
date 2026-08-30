@@ -138,4 +138,13 @@ class PaymentController extends Controller
                 ->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
         }
     }
+
+    /**
+     * صفحة إيصال قابلة للطباعة
+     */
+    public function receipt(Payment $payment)
+    {
+        $payment->load(['registration.student.parent', 'registration.schoolClass']);
+        return view('payments.receipt', compact('payment'));
+    }
 }

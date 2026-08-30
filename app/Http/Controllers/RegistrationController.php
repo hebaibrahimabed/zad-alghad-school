@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Discount;
 use App\Models\Registration;
 use App\Models\SchoolClass;
 use App\Models\Student;
+use App\Models\StudentDiscount;
 use Illuminate\Http\Request;
 
 class RegistrationController extends Controller
@@ -23,12 +25,24 @@ class RegistrationController extends Controller
     }
 
     /**
-     * عرض تفاصيل تسجيل واحد
+     * عرض تفاصيل تسجيل واحد + الخصومات القابلة للإضافة
      */
     public function show(Registration $registration)
     {
         $registration->load(['student.parent', 'schoolClass.level', 'discounts.discount', 'payments']);
-        return view('registrations.show', compact('registration'));
+
+        // الخصومات النشطة سارية المفعول حالياً وغير مطبّقة على هذا التسجيل بعد
+        $appliedDiscountIds = $registration->discounts->pluck('discount_id');
+        $availableDiscounts = Discount::where('is_active', true)
+            ->where('start_date', '<=', now())
+            ->where(function ($q) {
+                $q->whereNull('end_date')->orWhere('end_date', '>=', now());
+            })
+            ->whereNotIn('id', $appliedDiscountIds)
+            ->orderBy('name')
+            ->get();
+
+        return view('registrations.show', compact('registration', 'availableDiscounts'));
     }
 
     /**
@@ -85,6 +99,68 @@ class RegistrationController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'حدث خطأ أثناء الحذف: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * إضافة خصم يدوياً لتسجيل موجود مسبقاً
+     */
+    public function addDiscount(Request $request, Registration $registration)
+    {
+        $validated = $request->validate([
+            'discount_id' => 'required|exists:discounts,id',
+            'reason' => 'required|string|max:255',
+        ], [
+            'discount_id.required' => 'الرجاء اختيار خصم',
+            'reason.required' => 'سبب إضافة الخصم مطلوب',
+        ]);
+
+        $discount = Discount::findOrFail($validated['discount_id']);
+
+        // منع تكرار نفس الخصم على نفس التسجيل
+        if ($registration->discounts()->where('discount_id', $discount->id)->exists()) {
+            return redirect()->back()->with('error', 'هذا الخصم مطبّق على التسجيل مسبقاً.');
+        }
+
+        $registration->loadMissing('schoolClass');
+        $classPrice = $registration->schoolClass->price ?? 0;
+        $appliedValue = $discount->value_type === 'percentage'
+            ? round($classPrice * ($discount->value / 100), 2)
+            : $discount->value;
+
+        try {
+            StudentDiscount::create([
+                'registration_id' => $registration->id,
+                'discount_id' => $discount->id,
+                'applied_value' => $appliedValue,
+                'reason' => $validated['reason'],
+                'applied_by' => auth()->id(),
+            ]);
+
+            return redirect()->route('registrations.show', $registration->id)
+                ->with('success', 'تم إضافة الخصم بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'حدث خطأ أثناء إضافة الخصم: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * إزالة خصم مطبّق من تسجيل
+     */
+    public function removeDiscount(Registration $registration, StudentDiscount $studentDiscount)
+    {
+        if ($studentDiscount->registration_id !== $registration->id) {
+            abort(404);
+        }
+
+        try {
+            $studentDiscount->delete();
+            return redirect()->route('registrations.show', $registration->id)
+                ->with('success', 'تم إزالة الخصم بنجاح');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'حدث خطأ أثناء إزالة الخصم: ' . $e->getMessage());
         }
     }
 }

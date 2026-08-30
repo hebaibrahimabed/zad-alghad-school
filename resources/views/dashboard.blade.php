@@ -261,6 +261,9 @@
         .icon-blue { background: linear-gradient(135deg, #1a237e, #3949ab); color: white; }
         .icon-rose { background: linear-gradient(135deg, #880e4f, #e91e8c); color: white; }
         .icon-gold { background: linear-gradient(135deg, #e65100, #ffd600); color: white; }
+        .icon-green { background: linear-gradient(135deg, #1b5e20, #43a047); color: white; }
+        .icon-purple { background: linear-gradient(135deg, #4a148c, #7b1fa2); color: white; }
+        .icon-red { background: linear-gradient(135deg, #b71c1c, #e53935); color: white; }
 
         .stat-info { flex: 1; }
 
@@ -556,6 +559,69 @@
                 </div>
             </div>
         </div>
+
+        <!-- Financial Stats Cards -->
+        <div class="stats-grid" style="margin-top:20px;">
+            <div class="stat-card">
+                <div class="stat-icon-wrap icon-blue">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-num">{{ number_format($totalExpectedRevenue, 2) }} ₪</div>
+                    <div class="stat-label">إجمالي الرسوم المستحقة (بعد الخصومات)</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap icon-green">
+                    <i class="fas fa-hand-holding-usd"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-num">{{ number_format($totalCollected, 2) }} ₪</div>
+                    <div class="stat-label">إجمالي المحصّل فعلياً</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon-wrap icon-red">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-info">
+                    <div class="stat-num">{{ number_format($totalOutstanding, 2) }} ₪</div>
+                    <div class="stat-label">إجمالي المتبقي ({{ $registrationsWithBalanceCount }} تسجيل)</div>
+                </div>
+            </div>
+        </div>
+
+        @if($topOutstanding->isNotEmpty())
+        <div class="chart-card" style="margin-top:20px; background:white; border-radius:16px; border:1px solid #e8eaf6; padding:24px; box-shadow: 0 2px 12px rgba(26,35,126,0.05);">
+            <h5 style="color:#1a237e; font-weight:700; margin-bottom:16px;">
+                <i class="fas fa-exclamation-triangle" style="color:#e53935;"></i> أعلى 5 تسجيلات بمتبقي مالي
+            </h5>
+            <table style="width:100%; border-collapse:collapse;">
+                <thead>
+                    <tr style="background:#f8f9ff;">
+                        <th style="padding:10px 14px; text-align:right; font-size:0.8rem; color:#1a237e;">الطالب</th>
+                        <th style="padding:10px 14px; text-align:right; font-size:0.8rem; color:#1a237e;">الشعبة</th>
+                        <th style="padding:10px 14px; text-align:right; font-size:0.8rem; color:#1a237e;">المتبقي</th>
+                        <th style="padding:10px 14px; text-align:right; font-size:0.8rem; color:#1a237e;"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($topOutstanding as $reg)
+                    <tr>
+                        <td style="padding:10px 14px; font-size:0.85rem; border-bottom:1px solid #f0f2fa;">{{ $reg->student->full_name ?? '—' }}</td>
+                        <td style="padding:10px 14px; font-size:0.85rem; border-bottom:1px solid #f0f2fa;">{{ $reg->schoolClass->name ?? '—' }}</td>
+                        <td style="padding:10px 14px; font-size:0.85rem; border-bottom:1px solid #f0f2fa; color:#c62828; font-weight:700;">{{ number_format($reg->computed_outstanding, 2) }} ₪</td>
+                        <td style="padding:10px 14px; border-bottom:1px solid #f0f2fa;">
+                            <a href="{{ route('payments.index', $reg->id) }}" style="color:#3949ab; font-size:0.8rem; font-weight:700; text-decoration:none;">
+                                عرض الدفعات <i class="fas fa-arrow-left"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
 
         <!-- Charts Row -->
         <div class="charts-row">

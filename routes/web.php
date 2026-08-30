@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
+|a
 | Here is where you can register web routes for your application. These
 | routes are loaded by the RouteServiceProvider and all of them will
 | be assigned to the "web" middleware group. Make something great!
@@ -79,6 +79,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/registrations/{registration}/edit', [RegistrationController::class, 'edit'])->name('registrations.edit');
     Route::put('/registrations/{registration}', [RegistrationController::class, 'update'])->name('registrations.update');
     Route::delete('/registrations/{registration}', [RegistrationController::class, 'destroy'])->name('registrations.destroy');
+    Route::post('/registrations/{registration}/discounts', [RegistrationController::class, 'addDiscount'])->name('registrations.discounts.add');
+    Route::delete('/registrations/{registration}/discounts/{studentDiscount}', [RegistrationController::class, 'removeDiscount'])->name('registrations.discounts.remove');
 
     // ============================================
     // الدفعات المالية (Payments)
@@ -87,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/registrations/{registration}/payments/create', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/registrations/{registration}/payments', [PaymentController::class, 'store'])->name('payments.store');
     Route::get('/payments/{payment}/edit', [PaymentController::class, 'edit'])->name('payments.edit');
+    Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
     Route::put('/payments/{payment}', [PaymentController::class, 'update'])->name('payments.update');
     Route::delete('/payments/{payment}', [PaymentController::class, 'destroy'])->name('payments.destroy');
 

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Registration;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ class DashboardController extends Controller
 
         // إجمالي عدد الطلاب
         $totalStudents = $maleStudents + $femaleStudents;
-       
+
 
         // التوزيع حسب الصف الدراسي
         $gradeDistribution = Student::query()->select('gradeByAge', DB::raw('count(*) as count'))
@@ -32,14 +33,18 @@ class DashboardController extends Controller
             ->get();
 
         // إحصائيات التسجيل الشهرية (آخر 6 أشهر)
-        $monthlyRegistrations = Student::query()->select(
-                DB::raw('DATE_FORMAT(registrationDate, "%Y-%m") as month'),
-                DB::raw('count(*) as count')
-            )
+        // ملاحظة: كان هذا الاستعلام يستخدم DATE_FORMAT() وهي دالة خاصة بـ MySQL فقط
+        // وتفشل على قواعد بيانات أخرى (SQLite/PostgreSQL). استبدلناها بتجميع
+        // متوافق مع أي قاعدة بيانات عبر Carbon بدل الاعتماد على دالة SQL معيّنة.
+        $monthlyRegistrations = Student::query()
             ->where('registrationDate', '>=', now()->subMonths(6))
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+            ->get(['registrationDate'])
+            ->groupBy(fn ($student) => $student->registrationDate->format('Y-m'))
+            ->map(function ($group, $month) {
+                return (object) ['month' => $month, 'count' => $group->count()];
+            })
+            ->sortBy('month')
+            ->values();
 
         // تحويل أسماء الأشهر للعربية
         $monthNames = [
@@ -65,12 +70,55 @@ class DashboardController extends Controller
             return $item;
         });
 
+        // ============================================
+        // الإحصائيات المالية (Payments/Discounts)
+        // ملاحظة: نحسب الرصيد على مستوى كل تسجيل نشط بدل الاعتماد على
+        // مجموع عمود total_outstanding بجدول payments مباشرة، لأن أي تسجيل
+        // بدون أي دفعة مسجّلة أصلاً (صفر صفوف) لازم يظهر برصيد = كامل الرسوم،
+        // وهذا لا يظهر لو جمعنا فقط أعمدة الصفوف الموجودة فعلياً.
+        $activeRegistrations = Registration::with(['schoolClass', 'discounts', 'payments', 'student'])
+            ->where('current_status', 'active')
+            ->get();
+
+        $totalExpectedRevenue = 0;
+        $totalCollected = 0;
+        $totalOutstanding = 0;
+        $registrationsWithBalance = collect();
+
+        foreach ($activeRegistrations as $reg) {
+            $fee = $reg->schoolClass->price ?? 0;
+            $discountsSum = $reg->discounts->sum('applied_value');
+            $netFee = max(0, $fee - $discountsSum);
+            $paid = $reg->payments->sum('amount_paid');
+            $outstanding = max(0, $netFee - $paid);
+
+            $totalExpectedRevenue += $netFee;
+            $totalCollected += $paid;
+            $totalOutstanding += $outstanding;
+
+            if ($outstanding > 0) {
+                $reg->computed_outstanding = $outstanding;
+                $registrationsWithBalance->push($reg);
+            }
+        }
+
+        $topOutstanding = $registrationsWithBalance
+            ->sortByDesc('computed_outstanding')
+            ->take(5);
+
+        $registrationsWithBalanceCount = $registrationsWithBalance->count();
+
         return view('dashboard', compact(
             'totalStudents',
             'maleStudents',
             'femaleStudents',
             'gradeDistribution',
-            'monthlyRegistrations'
+            'monthlyRegistrations',
+            'totalExpectedRevenue',
+            'totalCollected',
+            'totalOutstanding',
+            'registrationsWithBalanceCount',
+            'topOutstanding'
         ));
     }
 }

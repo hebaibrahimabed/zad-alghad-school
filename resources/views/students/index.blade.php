@@ -211,8 +211,6 @@
 
     .badge-male { background: #e3f2fd; color: #1565c0; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
     .badge-female { background: #fce4ec; color: #880e4f; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
-    .badge-orphan { background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
-    .badge-not-orphan { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
     .badge-healthy { background: #e8f5e9; color: #2e7d32; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
     .badge-disabled { background: #ffebee; color: #c62828; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
     .badge-injured { background: #fff3e0; color: #e65100; padding: 4px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
@@ -280,7 +278,7 @@
             البحث والتصفية
         </div>
         @php
-            $hasFilters = collect(request()->only(['studentName','FatherName','GrandfatherName','lastName','IDNumber','Parentmobile','gradeByAge','lastCertificate','gender','healthCondition','OrphanStatus','paymentStatus','ministryStatus','dateFrom','dateTo']))->filter()->isNotEmpty();
+            $hasFilters = collect(request()->only(['studentName','FatherName','GrandfatherName','lastName','IDNumber','Parentmobile','gradeByAge','lastCertificate','gender','healthCondition','dateFrom','dateTo']))->filter()->isNotEmpty();
         @endphp
         @if($hasFilters)
             <a href="{{ route('students.index') }}" class="btn-clear">
@@ -368,8 +366,9 @@
         </div>
 
         {{-- Row 4: Date range --}}
-        {{-- ملاحظة: حالة اليتم/الدفع/تسجيل الوزارة انتقلت لجداول parents/payments/registrations
-             وستعود هنا كفلاتر بعد بناء واجهاتها وربطها بعلاقات الطالب --}}
+        {{-- ملاحظة: واجهات parents/payments/registrations صارت موجودة الآن (راجع صفحة الطالب → زر "التسجيلات")،
+             لكن فلترة قائمة الطلاب هنا حسب حالة الدفع/اليتم/تسجيل الوزارة لم تُربط بعد
+             بهذه العلاقات — تحسين مستقبلي مقترح --}}
         <div class="search-grid-2" style="margin-top:14px;">
             <div class="field-group">
                 <label><i class="fas fa-calendar fa-xs"></i> تاريخ التسجيل (من)</label>
@@ -393,7 +392,7 @@
         {{-- Active Filters Tags --}}
         @if($hasFilters)
         <div class="active-filters">
-            @foreach(['studentName'=>'اسم الطالب','FatherName'=>'اسم الأب','GrandfatherName'=>'اسم الجد','lastName'=>'العائلة','IDNumber'=>'الهوية','Parentmobile'=>'الهاتف','gradeByAge'=>'الصف','lastCertificate'=>'الشهادة','gender'=>'الجنس','healthCondition'=>'الصحة','OrphanStatus'=>'اليتم','paymentStatus'=>'الدفع','ministryStatus'=>'الوزارة','dateFrom'=>'من تاريخ','dateTo'=>'إلى تاريخ'] as $key => $label)
+            @foreach(['studentName'=>'اسم الطالب','FatherName'=>'اسم الأب','GrandfatherName'=>'اسم الجد','lastName'=>'العائلة','IDNumber'=>'الهوية','Parentmobile'=>'الهاتف','gradeByAge'=>'الصف','lastCertificate'=>'الشهادة','gender'=>'الجنس','healthCondition'=>'الصحة','dateFrom'=>'من تاريخ','dateTo'=>'إلى تاريخ'] as $key => $label)
                 @if(request($key))
                     <span class="filter-tag">
                         {{ $label }}: {{ request($key) }}
@@ -437,7 +436,6 @@
                     <th>الصف</th>
                     <th>رقم الهاتف</th>
                     <th>الحالة الصحية</th>
-                    <th>اليتم</th>
                     <th>تاريخ التسجيل</th>
                     <th>الإجراءات</th>
                 </tr>
@@ -465,13 +463,6 @@
                             <span class="badge-disabled">معاق</span>
                         @else
                             <span class="badge-injured">مصاب</span>
-                        @endif
-                    </td>
-                    <td>
-                        @if($student->OrphanStatus == 'orphan')
-                            <span class="badge-orphan">يتيم</span>
-                        @else
-                            <span class="badge-not-orphan">لا</span>
                         @endif
                     </td>
                     <td>{{ $student->registrationDate->format('Y-m-d') }}</td>
